@@ -1,13 +1,14 @@
 import os
 from groq import Groq
+from dotenv import load_dotenv
 
 class GroqRunTime():
     def __init__(self):
-        with open('api_key.txt', 'r') as txt_r:
-            os.environ["GROQ_API_KEY"] = txt_r.readlines()[0].strip()
-        
+        load_dotenv()
+        self.api_key = os.getenv("GROQ_KEY")
+
         self.client = Groq(
-            api_key=os.environ.get("GROQ_API_KEY"),
+            api_key=self.api_key,
         )
 
     def generate_response(self, system_prompt, user_prompt):
@@ -22,6 +23,6 @@ class GroqRunTime():
                     "content": user_prompt
                 }
             ],
-            model="meta-llama/llama-4-scout-17b-16e-instruct"
+            model="llama-3.1-8b-instant"
         )
         return response.choices[0].message.content.strip()
