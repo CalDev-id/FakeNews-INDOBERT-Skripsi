@@ -38,12 +38,49 @@ def classify_berita_tool(input_str: str):
     return classify_berita(title, content)
 
 
-def get_evidence_tool(title: str, content: str) -> str:
-    total_results = 5
-    scrape_limit = 2
+def get_evidence_tool(input_str: str) -> str:
+    try:
+        data = json.loads(input_str)
+        title = data.get("title", "")
+    except:
+        # fallback untuk format "title=..., content=..."
+        parts = [p.strip() for p in input_str.split(",")]
+        title = parts[0].split("=",1)[1].strip()
+
+    total_results: int = 10
+    scrape_limit: int = 1
     query = title
 
+    # 1. Google Search
     links = google_search(query, total_results=total_results)
+
+    # 2. ScrapingBee
+    scraped = []
+    for url in links[:scrape_limit]:
+        content = scrape_html(url)
+        if content:
+            scraped.append(content)
+
+    return {
+        "links": links,
+        "evidence": scraped
+    }
+def classifiy_berita_with_evidence_tool(input_str: str) -> str:
+    try:
+        data = json.loads(input_str)
+        title = data.get("title", "")
+        content = data.get("content", "")
+    except:
+        # fallback untuk format "title=..., content=..."
+        parts = [p.strip() for p in input_str.split(",")]
+        title = parts[0].split("=",1)[1].strip()
+        content = parts[1].split("=",1)[1].strip()
+
+    classification = classify_berita(title, content)
+
+    total_results = 10
+    scrape_limit = 3
+    links = google_search(title, total_results=total_results)
 
     scraped = []
     for url in links[:scrape_limit]:
@@ -53,7 +90,12 @@ def get_evidence_tool(title: str, content: str) -> str:
                 "url": url,
                 "content": content
             })
-    return scraped
+
+    return {
+        "input_user": input_str,
+        "classification": classification,
+        "evidence_scraped": scraped,
+    }
 
 # === Initialize LLM ===
 llm = ChatGroq(
@@ -63,8 +105,10 @@ llm = ChatGroq(
 
 # === Register tools ===
 tools = [
-    Tool.from_function(func=classify_berita_tool, name="classify_berita", description="Klasifikasikan berita. Input format: 'title=Judul berita, content=Isi berita'"),
-    Tool.from_function(func=get_evidence_tool, name="get_evidence", description="Dapatkan bukti dari berita. Input format: 'title=Judul berita, content=Isi berita'"),
+    Tool.from_function(func=classify_berita_tool, name="classify_berita_tanpa_bukti", description="Klasifikasikan berita tanpa bukti. Input format: 'title=Judul berita, content=Isi berita'"),
+    Tool.from_function(func=get_evidence_tool, name="get_evidence", description="Dapatkan bukti dari judul berita yang diberikan, berikan link link dari hasil pencarian Google, dan bukti yang di-scrape dari link tersebut. Input format: 'title=Judul berita'"),
+    Tool.from_function(func=classifiy_berita_with_evidence_tool, name="classify_berita_with_evidence", description="Prediksi klasifikasi berita dengan pencarian bukti Input format: 'title=Judul berita, content=Isi berita'"),
+
 ]
 
 agent = initialize_agent(
@@ -76,12 +120,8 @@ agent = initialize_agent(
     agent_kwargs={
         "system_message": SystemMessage(
             content=(
-                "Kamu adalah asisten nutrisi dalam bahasa Indonesia. "
-                "Jika pengguna meminta perhitungan (BMI, BMR, kalori, makro, dll) "
-                "tapi belum memberi semua data yang dibutuhkan (seperti berat, tinggi, umur, atau gender), "
-                "jangan langsung hitung. Sebaliknya, tanyakan dulu data yang kurang "
-                "dengan ramah. "
-                "Jika semua data sudah lengkap, barulah panggil tool yang sesuai."
+                "Kamu adalah asisten AI yang membantu mengklasifikasikan berita sebagai hoaks atau valid. "
+                "Bantulah pengguna dengan memberikan informasi yang akurat dan relevan berdasarkan klasifikasi berita dan bukti yang ditemukan. "
             )
         )
     }

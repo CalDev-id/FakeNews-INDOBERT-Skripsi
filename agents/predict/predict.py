@@ -15,13 +15,12 @@ model = AutoModelForSequenceClassification.from_pretrained(MODEL_DIR)
 def classify_berita(title, content):
     text = f"{title}\n\n{content}"
 
-    # ⚡ Truncation aman untuk artikel panjang
     inputs = tokenizer(
         text,
         return_tensors="pt",
-        truncation=True,       # otomatis potong token > max_length
-        padding="max_length",  # pad sampai max_length
-        max_length=512         # pastikan cocok dengan IndoBERT
+        truncation=True,   
+        padding="max_length", 
+        max_length=512      
     )
 
     with torch.no_grad():

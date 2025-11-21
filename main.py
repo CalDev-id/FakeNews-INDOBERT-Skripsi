@@ -150,7 +150,6 @@ def chat_endpoint(data: ChatRequest):
         # kirim ke agent LangChain
         response = agent.run(user_message)
         return {
-            "user": user_message,
             "response": response
         }
     except Exception as e:
