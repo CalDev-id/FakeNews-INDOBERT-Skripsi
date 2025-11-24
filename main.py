@@ -9,6 +9,8 @@ from agents.explanation.explanation import explanation
 from agents.chat.chat import agent
 
 #uvicorn main:app --reload
+#uvicorn main:app --host 0.0.0.0 --port 8000
+
 app = FastAPI()
 
 @app.get("/")
@@ -71,6 +73,7 @@ def predict_with_evidence(data: PredictRequest):
     llm_output = explanation(
         classification=classification,
         news_scrape=scraped,
+        evidence_link=links,
         title=data.title,
         content=data.content
     )
@@ -85,12 +88,14 @@ def predict_with_evidence(data: PredictRequest):
         "evidence_scraped": scraped,
         "explanation": llm_output 
     }
-
+class UrlRequest(BaseModel):
+    url: str
+    
 @app.post("/predict_from_url/")
-def predict_from_url(url: str):
+def predict_from_url(data: UrlRequest):
 
     # 1. Scrape artikel dari URL input
-    scraped_main = scrape_html(url)
+    scraped_main = scrape_html(data.url)
     if not scraped_main or scraped_main.get("content") == "Tidak berhasil ekstrak isi artikel":
         return {
             "error": "Gagal mengambil artikel dari URL",
@@ -105,7 +110,7 @@ def predict_from_url(url: str):
 
     # 3. Google Search untuk mendapatkan evidence
     total_results = 10
-    scrape_limit = 3
+    scrape_limit = 1
     links = google_search(title, total_results=total_results)
 
     # 4. Scrape evidence dari link pencarian
@@ -123,6 +128,7 @@ def predict_from_url(url: str):
         classification=classification,
         news_scrape=scraped_evidence,
         title=title,
+        evidence_link=links,
         content=content
     )
 
@@ -147,7 +153,6 @@ def chat_endpoint(data: ChatRequest):
     user_message = data.message
 
     try:
-        # kirim ke agent LangChain
         response = agent.run(user_message)
         return {
             "response": response
