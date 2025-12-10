@@ -7,9 +7,13 @@ from agents.get_evidence.google_search import google_search
 from agents.get_evidence.scrape_html import scrape_html
 from agents.explanation.explanation import explanation
 from agents.chat.chat import agent
+from auth.supabase_client import supabase
+from typing import List, Any, Optional
 
 #uvicorn main:app --reload
 #uvicorn main:app --host 0.0.0.0 --port 8000
+#hcsp_1_5g
+#http://192.168.50.110:8000/docs
 
 app = FastAPI()
 
@@ -159,3 +163,42 @@ def chat_endpoint(data: ChatRequest):
         }
     except Exception as e:
         return {"error": str(e)}
+    
+
+# SUPABASE
+
+@app.get("/news")
+def get_news():
+    result = supabase.table("news").select("*").execute()
+    return result.data
+
+@app.get("/news/{news_id}")
+def get_news_by_id(news_id: str):
+    result = supabase.table("news").select("*").eq("id", news_id).single().execute()
+    return result.data
+
+@app.get("/news/hoax")
+def get_hoax_news():
+    result = supabase.table("news").select("*").eq("classification", "hoax").execute()
+    return result.data
+
+@app.get("/news/search")
+def search_news(q: str):
+    result = supabase.table("news").select("*").ilike("title", f"%{q}%").execute()
+    return result.data
+
+class NewsPayload(BaseModel):
+    url: str
+    title: str
+    content: str
+    classification: str
+    evidence_link: Optional[List[str]] = None
+    evidence_scraped: Optional[Any] = None
+    explanation: Optional[str] = None
+
+
+@app.post("/news")
+def insert_news(payload: NewsPayload):
+    data = payload.dict()
+    result = supabase.table("news").insert(data).execute()
+    return result.data

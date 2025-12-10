@@ -19,11 +19,12 @@ SOCIAL_MEDIA_DOMAINS = [
     "threads.net",
     "youtube.com",
     "youtu.be"
+    "kaggle.com"
+    "huggingface.co"
 ]
 
 
 def google_search(query, total_results=20):
-    """Search Google CSE dan kembalikan list link valid."""
     service = build("customsearch", "v1", developerKey=GOOGLE_API_KEY)
     results = []
     start = 1
