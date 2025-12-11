@@ -10,6 +10,7 @@ from agents.explanation.explanation import explanation
 from agents.chat.chat import agent
 from auth.supabase_client import supabase
 from typing import List, Any, Optional
+import asyncio
 
 #uvicorn main:app --reload
 #uvicorn main:app --host 0.0.0.0 --port 8000
@@ -230,6 +231,43 @@ def predict_from_claim(data: ClaimRequest):
         "evidence_links": links,
         "evidence_scraped": scraped,
         "explanation": llm_output
+    }
+
+@app.post("/predict_test/")
+async def predict_test(data: UrlRequest):
+    await asyncio.sleep(5)
+
+    return {
+        "url": "https://www.liputan6.com/global/read/2175314/ditemukan-fosil-manusia-kembar-tertua-di-dunia",
+  "title": "Ditemukan: Fosil Manusia Kembar Tertua di Dunia",
+  "content": "Satu set fosil manusia purba ditemukan dalam sebuah penggalian.\nLiputan6.com, Rusia- Seorang bio-arkeolog Saskatchewan mengemukakan bahwa ia telah menemukan fosil manusia kembar tertua di sebuah pemakaman Siberia. Angela Lieverse, sang arkeolog mengatakan bahwa kerangka tersebut digali dari seorang ibu dan anak kembarnya yang berusia sekitar 7.700 tahun. Fosil wanita tersebut diperkirakan meninggal dalam kondisi hamil tua. Penyebabnya bisa jadi karena pendarahan atau kelelahan saat menjelang melahirkan. Namun sang bayi yang dinyatakan kembar, salah satunya berada dalam posisi sungsang, yang menghambat kelahiran anak kedua. Dilansir melalui jurnal Antiquity, Jumat (13/2/2015), para ilmuwan menganggap anak kembar hanya ada dalam pasangan moderen dan meragukan keabsahannya di masa lalu. Kini, dengan adanya penemuan fosil bayi kembar tersebut membuktikan bahwa anak kembar pun eksis sejak jaman purba. Sebelum menemukan fosil wanita beserta anak kekmbarnya ini, set yang sama pernah ditemukan di South Dakota, Amerika Serikat beberapa waktu yang lalu. Usia fosil tersebut diperkirakan 400 tahun. ( Liz )\nCopyright © 2025 Liputan6.com KLY KapanLagi Youniverse All Right Reserved.",
+  "classification": {
+    "final_label": "valid",
+    "final_confidence": 78.5
+  },
+  "evidence_links": [
+    "https://www.liputan6.com/global/read/2175314/ditemukan-fosil-manusia-kembar-tertua-di-dunia",
+    "https://e-journal.unair.ac.id/MOG/article/download/14507/8031/51258",
+    "https://repository.unair.ac.id/view/subjects/R5-920.html",
+    "https://www.bbc.com/indonesia/vert-tra-60427392",
+    "https://www.merdeka.com/teknologi/mumi-remaja-mesir-kuno-ditemukan-meninggal-saat-mengandung-bayi-kembar-74538-mvk.html",
+    "https://id.scribd.com/document/747590311/Modified-4",
+    "https://www.detik.com/bali/berita/d-6560608/300-bio-wa-cuek-aesthetic-dan-beda-dari-yang-lain",
+    "https://www.kompas.com/tren/read/2023/06/09/100000165/benarkah-sering-tidur-telentang-bikin-kepala-bayi-datar-atau-peyang-?page=all",
+    "https://huggingface.co/fathan/indojave-codemixed-bert-base/raw/main/vocab.txt",
+    "https://www.lemon8-app.com/discover/acara%20tujuh%20bulanan%20kehamilan?region=id"
+  ],
+  "evidence_scraped": [
+    {
+      "judul": "Ditemukan: Fosil Manusia Kembar Tertua di Dunia",
+      "tanggal": "4 jam lalu",
+      "sumber": "liputan6.com",
+      "link": "https://www.liputan6.com/global/read/2175314/ditemukan-fosil-manusia-kembar-tertua-di-dunia",
+      "content": "Satu set fosil manusia purba ditemukan dalam sebuah penggalian.\nLiputan6.com, Rusia- Seorang bio-arkeolog Saskatchewan mengemukakan bahwa ia telah menemukan fosil manusia kembar tertua di sebuah pemakaman Siberia. Angela Lieverse, sang arkeolog mengatakan bahwa kerangka tersebut digali dari seorang ibu dan anak kembarnya yang berusia sekitar 7.700 tahun. Fosil wanita tersebut diperkirakan meninggal dalam kondisi hamil tua. Penyebabnya bisa jadi karena pendarahan atau kelelahan saat menjelang melahirkan. Namun sang bayi yang dinyatakan kembar, salah satunya berada dalam posisi sungsang, yang menghambat kelahiran anak kedua. Dilansir melalui jurnal Antiquity, Jumat (13/2/2015), para ilmuwan menganggap anak kembar hanya ada dalam pasangan moderen dan meragukan keabsahannya di masa lalu. Kini, dengan adanya penemuan fosil bayi kembar tersebut membuktikan bahwa anak kembar pun eksis sejak jaman purba. Sebelum menemukan fosil wanita beserta anak kekmbarnya ini, set yang sama pernah ditemukan di South Dakota, Amerika Serikat beberapa waktu yang lalu. Usia fosil tersebut diperkirakan 400 tahun. ( Liz )\nCopyright © 2025 Liputan6.com KLY KapanLagi Youniverse All Right Reserved.",
+      "featured_image": "https://cdn1-production-images-kly.akamaized.net/FMDwWDXcjXNAH9mO844ywM0zT-8=/1200x675/smart/filters:quality(75):strip_icc():format(jpeg)/kly-media-production/medias/810502/original/077247100_1423801517-bonesasdfasdf.jpg"
+    }
+  ],
+  "explanation": "Kesimpulan: Valid (bukan hoaks)\n\nAlasan singkat:\n- Klaim didukung oleh liputan media arus utama (mis. Liputan6) yang merujuk pada publikasi ilmiah (jurnal Antiquity) dan nama peneliti nyata (Angela Lieverse). Hasil scraping menunjukkan artikel Liputan6 yang mengutip Antiquity (13/2/2015) tentang kerangka seorang ibu dan janin kembar berusia sekitar 7.700 tahun dari Siberia.\n- Adanya rujukan ke jurnal/publikasi akademik (Antiquity) menjadikan klaim ini berdasar pada temuan arkeologis/osteologis, bukan sekadar desas-desus.\n- Beberapa tautan dalam daftar bukti tidak relevan atau salah konteks (mis. detik.com yang tampak tidak terkait, Scribd, lemon8, dll), namun itu tidak menghapus bukti utama dari laporan akademik dan liputan media.\n\nCatatan penting / keterbatasan:\n- Interpretasi fosil selalu dapat diperdebatkan dalam komunitas ilmiah; klaim “tertua di dunia” bergantung pada penafsiran data dan perbandingan dengan temuan lain. Namun, berdasarkan sumber yang ada, klaim bahwa ditemukan bukti kembar purba tersebut adalah sah dan dilaporkan secara ilmiah.\n- Jika ingin membagikan berita ini, disarankan menyertakan referensi ke publikasi asli (Antiquity) atau sumber akademik untuk konteks lebih lengkap.\n\nKepercayaan penilaian: sekitar 80% (sejalan dengan hasil model IndoBERT yang diberikan: \"valid\" 78.5%)."
     }
 
 
