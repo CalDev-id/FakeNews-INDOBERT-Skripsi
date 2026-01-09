@@ -81,12 +81,12 @@ def search_news(q: str):
 @router.post("/news")
 def insert_news(
     payload: NewsPayload,
-    user=Depends(get_current_user)   # 🔥 ambil user login
+    user=Depends(get_current_user)
 ):
-    user_id = user.id                # 🔥 auth.uid()
+    user_id = user.id         
 
     data = payload.dict()
-    data["author_id"] = user_id      # 🔥 SET DI SINI
+    data["author_id"] = user_id
 
     result = (
         supabase
@@ -114,4 +114,22 @@ def get_my_news(user=Depends(get_current_user)):
 
     return res.data
 
+@router.delete("/news/my/{news_id}")
+def delete_my_news(news_id: UUID, user=Depends(get_current_user)):
+    res = (
+        supabase
+        .table("news")
+        .delete()
+        .eq("id", str(news_id))
+        .eq("author_id", user.id)
+        .execute()
+    )
 
+    if getattr(res, "error", None):
+        print("SUPABASE ERROR:", res.error)
+        raise HTTPException(status_code=500, detail=str(res.error))
+
+    if not res.data:
+        raise HTTPException(status_code=404, detail="News not found")
+
+    return {"message": "News deleted"}
